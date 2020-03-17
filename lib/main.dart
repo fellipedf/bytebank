@@ -13,9 +13,17 @@ class ByteBankApp extends StatelessWidget {
   }
 }
 
-class FormularioTransferencia extends StatelessWidget {
+class FormularioTransferencia extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    return FormularioTransferenciaState();
+  }
+}
+
+class FormularioTransferenciaState extends State<FormularioTransferencia> {
   final TextEditingController _controladorCampoNumeroConta =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController _controladorCampovalor = TextEditingController();
 
   @override
@@ -24,24 +32,24 @@ class FormularioTransferencia extends StatelessWidget {
         appBar: AppBar(
           title: Text('CriandoTransferencia'),
         ),
-        body: Column(
-          children: <Widget>[
-            Editor(
-                controlador: _controladorCampoNumeroConta,
-                rotulo: 'Número da conta',
-                dica: '0000'
-            ),
-            Editor(
-                controlador: _controladorCampovalor,
-                rotulo: 'Valor',
-                dica: '0.00',
-                icone: Icons.monetization_on
-            ),
-            RaisedButton(
-              child: Text('Confirmar'),
-              onPressed: () => _criaTransferencia(context),
-            )
-          ],
+        body: SingleChildScrollView(
+          child: Column(
+            children: <Widget>[
+              Editor(
+                  controlador: _controladorCampoNumeroConta,
+                  rotulo: 'Número da conta',
+                  dica: '0000'),
+              Editor(
+                  controlador: _controladorCampovalor,
+                  rotulo: 'Valor',
+                  dica: '0.00',
+                  icone: Icons.monetization_on),
+              RaisedButton(
+                child: Text('Confirmar'),
+                onPressed: () => _criaTransferencia(context),
+              )
+            ],
+          ),
         ));
   }
 
@@ -49,10 +57,8 @@ class FormularioTransferencia extends StatelessWidget {
     debugPrint('clicou no confirmar');
     debugPrint(_controladorCampoNumeroConta.text);
     debugPrint(_controladorCampovalor.text);
-    final int numeroConta =
-    int.tryParse(_controladorCampoNumeroConta.text);
-    final double valor =
-    double.tryParse(_controladorCampoNumeroConta.text);
+    final int numeroConta = int.tryParse(_controladorCampoNumeroConta.text);
+    final double valor = double.tryParse(_controladorCampoNumeroConta.text);
     if (numeroConta != null && valor != null) {
       final transferenciaCriada = Transferencia(valor, numeroConta);
       debugPrint('criando transferência');
@@ -63,7 +69,6 @@ class FormularioTransferencia extends StatelessWidget {
 }
 
 class Editor extends StatelessWidget {
-
   final TextEditingController controlador;
   final String rotulo;
   final String dica;
@@ -89,9 +94,7 @@ class Editor extends StatelessWidget {
   }
 }
 
-
 class ListaTransferencias extends StatefulWidget {
-
   final List<Transferencia> _transferencias = List();
 
   @override
@@ -102,7 +105,6 @@ class ListaTransferencias extends StatefulWidget {
 }
 
 class ListaTansferenciasState extends State<ListaTransferencias> {
-
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -118,17 +120,25 @@ class ListaTansferenciasState extends State<ListaTransferencias> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add), onPressed: () {
-        final Future<Transferencia> future = Navigator.push(context, MaterialPageRoute(
-            builder: (context) {
-              return FormularioTransferencia();
-            }));
-        future.then((transferenciaRecebida) {
-          debugPrint('Chegou no them');
-          debugPrint('$transferenciaRecebida');
-          widget._transferencias.add(transferenciaRecebida);
-        });
-      },
+        child: Icon(Icons.add),
+        onPressed: () {
+          final Future<Transferencia> future =
+              Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return FormularioTransferencia();
+          }));
+          future.then((transferenciaRecebida) {
+            Future.delayed(Duration(seconds: 1), () {
+              if (transferenciaRecebida != null) {
+                debugPrint('Chegou no them');
+                debugPrint('$transferenciaRecebida');
+                //setState para atualizar conteudo assincrono
+                setState(() {
+                  widget._transferencias.add(transferenciaRecebida);
+                });
+              }
+            });
+          });
+        },
       ),
     );
   }
@@ -161,6 +171,4 @@ class Transferencia {
   String toString() {
     return 'Transferencia{valor: $valor, numeroConta: $numeroConta}';
   }
-
-
 }
